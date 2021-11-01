@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t nashno9/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true nashno9/react-test npm run test 
+
+after_success:
+  - docker build -t nashno9/multi-client ./client
+  - docker build -t nashno9/multi-nginx ./nginx
+  - docker build -t nashno9/multi-server ./server
+  - docker build -t nashno9/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push nashno9/multi-client
+  - docker push nashno9/multi-nginx
+  - docker push nashno9/multi-server
+  - docker push nashno9/multi-worker
